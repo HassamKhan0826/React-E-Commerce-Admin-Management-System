@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/contexts";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -21,9 +22,17 @@ const mobileLinkClass = ({ isActive }) =>
   }`;
 
 function Navbar() {
+  const { isAuthenticated, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const closeMenu = () => setIsMenuOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    closeMenu();
+    navigate("/");
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -70,6 +79,12 @@ function Navbar() {
               {item.label}
             </NavLink>
           ))}
+
+          {isAuthenticated && (
+            <NavLink to="/dashboard" className={desktopLinkClass}>
+              Dashboard
+            </NavLink>
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -85,12 +100,22 @@ function Navbar() {
             </svg>
           </Link>
 
-          <Link
-            to="/login"
-            className="hidden rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 sm:inline-flex"
-          >
-            Admin login
-          </Link>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="hidden rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:inline-flex"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 sm:inline-flex"
+            >
+              Admin login
+            </Link>
+          )}
         </div>
       </div>
 
@@ -108,9 +133,25 @@ function Navbar() {
                 {item.label}
               </NavLink>
             ))}
-            <NavLink to="/login" onClick={closeMenu} className={mobileLinkClass}>
-              Admin login
-            </NavLink>
+
+            {isAuthenticated ? (
+              <>
+                <NavLink to="/dashboard" onClick={closeMenu} className={mobileLinkClass}>
+                  Dashboard
+                </NavLink>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <NavLink to="/login" onClick={closeMenu} className={mobileLinkClass}>
+                Admin login
+              </NavLink>
+            )}
           </div>
         </nav>
       )}
