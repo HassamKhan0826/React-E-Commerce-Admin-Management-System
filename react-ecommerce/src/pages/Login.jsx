@@ -1,7 +1,141 @@
+import { useContext, useEffect, useRef, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/contexts";
+import { DEMO_CREDENTIALS } from "../utils/helpers";
+
+const inputClass =
+  "mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10";
+
 function Login() {
+  const { isAuthenticated, login } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const emailRef = useRef(null);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [loginError, setLoginError] = useState("");
+
+  const redirectTo = location.state?.from || "/dashboard";
+
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
+
+  if (isAuthenticated) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+      newErrors.email = "Enter a valid email address.";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required.";
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    if (login(email, password)) {
+      navigate(redirectTo, { replace: true });
+    } else {
+      setLoginError("Invalid email or password.");
+    }
+  };
+
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold">Login</h1>
+    <section className="flex min-h-[75vh] items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-bold text-slate-900">Admin login</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Sign in to manage products, orders and users.
+        </p>
+
+        {location.state?.message && !loginError && (
+          <div className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            {location.state.message}
+          </div>
+        )}
+
+        {loginError && (
+          <div role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {loginError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
+          <div>
+            <label htmlFor="login-email" className="text-sm font-medium text-slate-700">
+              Email
+            </label>
+            <input
+              id="login-email"
+              ref={emailRef}
+              type="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setErrors((current) => ({ ...current, email: "" }));
+                setLoginError("");
+              }}
+              className={inputClass}
+              placeholder="admin@example.com"
+              autoComplete="username"
+            />
+            {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="login-password" className="text-sm font-medium text-slate-700">
+              Password
+            </label>
+            <input
+              id="login-password"
+              type="password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setErrors((current) => ({ ...current, password: "" }));
+                setLoginError("");
+              }}
+              className={inputClass}
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
+            {errors.password && <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+          >
+            Sign in
+          </button>
+        </form>
+
+        <div className="mt-6 rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-600">
+          <p className="font-semibold text-slate-700">Demo credentials</p>
+          <p className="mt-1">Email: {DEMO_CREDENTIALS.email}</p>
+          <p>Password: {DEMO_CREDENTIALS.password}</p>
+        </div>
+      </div>
     </section>
   );
 }
