@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/contexts";
+import { useCart } from "../hooks/useCart";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -23,6 +24,7 @@ const mobileLinkClass = ({ isActive }) =>
 
 function Navbar() {
   const { isAuthenticated, logout } = useContext(AuthContext);
+  const { totalItems } = useCart();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -91,13 +93,19 @@ function Navbar() {
           <Link
             to="/cart"
             onClick={closeMenu}
-            aria-label="Cart"
+            aria-label={`Cart, ${totalItems} items`}
             className="relative flex h-10 w-10 items-center justify-center rounded-lg text-stone-700 hover:bg-cream-200"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 7h12l-1 13H7L6 7Z" />
               <path d="M9 7a3 3 0 0 1 6 0" />
             </svg>
+
+            {totalItems > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-400 px-1 text-[10px] font-bold text-brand-950">
+                {totalItems}
+              </span>
+            )}
           </Link>
 
           {isAuthenticated ? (

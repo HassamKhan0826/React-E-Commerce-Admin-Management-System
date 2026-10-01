@@ -1,12 +1,29 @@
+import { memo, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "./Button";
 import { formatCurrency, getOriginalPrice } from "../utils/helpers";
 
-function ProductCard({ product, onAddToCart }) {
+const ProductCard = memo(function ProductCard({ product, onAddToCart }) {
+  const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!added) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setAdded(false), 1500);
+    return () => clearTimeout(timer);
+  }, [added]);
+
+  const handleAdd = () => {
+    onAddToCart(product);
+    setAdded(true);
+  };
+
   const discount = Math.round(product.discountPercentage || 0);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-stone-200 bg-cream-50 transition hover:-transtone-y-0.5 hover:shadow-lg">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-stone-200 bg-cream-50 transition hover:-translate-y-0.5 hover:shadow-lg">
       <Link to={`/products/${product.id}`} className="relative block aspect-square bg-cream-200">
         <img
           src={product.thumbnail}
@@ -54,13 +71,13 @@ function ProductCard({ product, onAddToCart }) {
           >
             View details
           </Link>
-          <Button size="sm" className="whitespace-nowrap" onClick={() => onAddToCart?.(product)}>
-            Add to cart
+          <Button size="sm" className="whitespace-nowrap" onClick={handleAdd}>
+            {added ? "Added ✓" : "Add to cart"}
           </Button>
         </div>
       </div>
     </article>
   );
-}
+});
 
 export default ProductCard;
