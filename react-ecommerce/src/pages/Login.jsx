@@ -4,7 +4,7 @@ import { AuthContext } from "../context/contexts";
 import { DEMO_CREDENTIALS } from "../utils/helpers";
 
 const inputClass =
-  "mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10";
+  "mt-2 w-full rounded-lg border border-stone-300 bg-cream-50 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
 
 function Login() {
   const { isAuthenticated, login } = useContext(AuthContext);
@@ -62,14 +62,14 @@ function Login() {
 
   return (
     <section className="flex min-h-[75vh] items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">Admin login</h1>
-        <p className="mt-2 text-sm text-slate-500">
+      <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-cream-50 p-8 shadow-sm">
+        <h1 className="text-2xl font-bold text-stone-900">Admin login</h1>
+        <p className="mt-2 text-sm text-stone-500">
           Sign in to manage products, orders and users.
         </p>
 
         {location.state?.message && !loginError && (
-          <div className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          <div className="mt-6 rounded-lg bg-gold-50 px-4 py-3 text-sm font-medium text-gold-800">
             {location.state.message}
           </div>
         )}
@@ -82,7 +82,7 @@ function Login() {
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
           <div>
-            <label htmlFor="login-email" className="text-sm font-medium text-slate-700">
+            <label htmlFor="login-email" className="text-sm font-medium text-stone-700">
               Email
             </label>
             <input
@@ -103,7 +103,7 @@ function Login() {
           </div>
 
           <div>
-            <label htmlFor="login-password" className="text-sm font-medium text-slate-700">
+            <label htmlFor="login-password" className="text-sm font-medium text-stone-700">
               Password
             </label>
             <input
@@ -124,14 +124,14 @@ function Login() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+            className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
           >
             Sign in
           </button>
         </form>
 
-        <div className="mt-6 rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-600">
-          <p className="font-semibold text-slate-700">Demo credentials</p>
+        <div className="mt-6 rounded-lg bg-cream-100 px-4 py-3 text-xs text-stone-600">
+          <p className="font-semibold text-stone-700">Demo credentials</p>
           <p className="mt-1">Email: {DEMO_CREDENTIALS.email}</p>
           <p>Password: {DEMO_CREDENTIALS.password}</p>
         </div>

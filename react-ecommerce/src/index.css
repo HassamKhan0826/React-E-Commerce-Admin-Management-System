@@ -2,10 +2,45 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  /* Burgundy — main brand color */
+  --color-brand-50: #fbf1f2;
+  --color-brand-100: #f5dadd;
+  --color-brand-200: #eab3ba;
+  --color-brand-300: #d9808c;
+  --color-brand-400: #c04f60;
+  --color-brand-500: #a23142;
+  --color-brand-600: #8a1e30;
+  --color-brand-700: #731828;
+  --color-brand-800: #5e1421;
+  --color-brand-900: #4a101a;
+  --color-brand-950: #2e0a10;
+
+  /* Beige — backgrounds and surfaces */
+  --color-cream-50: #fffcf6;
+  --color-cream-100: #faf5ea;
+  --color-cream-200: #f3eada;
+  --color-cream-300: #e8dbc3;
+  --color-cream-400: #d9c6a5;
+
+  /* Light gold — accents, ratings, highlights */
+  --color-gold-50: #fbf6e9;
+  --color-gold-100: #f5eacb;
+  --color-gold-200: #ebd69b;
+  --color-gold-300: #dfc06b;
+  --color-gold-400: #d4af4f;
+  --color-gold-500: #c9a24a;
+  --color-gold-600: #a9852f;
+  --color-gold-700: #876824;
+  --color-gold-800: #6b5220;
+  --color-gold-900: #56421d;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background-color: var(--color-cream-100);
 }
 
 button {

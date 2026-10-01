@@ -28,31 +28,31 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-stone-200 bg-cream-50">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-5 lg:px-8">
         <div className="lg:col-span-2">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
               RS
             </span>
-            <span className="text-lg font-bold tracking-tight text-slate-900">
+            <span className="text-lg font-bold tracking-tight text-stone-900">
               RE:STORE
             </span>
           </Link>
 
-          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-500">
+          <p className="mt-4 max-w-sm text-sm leading-6 text-stone-500">
             Everyday essentials from beauty to electronics, picked for quality
             and delivered fast.
           </p>
 
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-stone-500">
             support@restore.com
           </p>
         </div>
 
         {footerSections.map((section) => (
           <div key={section.title}>
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h3 className="text-sm font-semibold text-stone-900">
               {section.title}
             </h3>
 
@@ -61,7 +61,7 @@ function Footer() {
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm text-slate-500 transition-colors hover:text-emerald-600"
+                    className="text-sm text-stone-500 transition-colors hover:text-brand-600"
                   >
                     {link.label}
                   </Link>
@@ -72,8 +72,8 @@ function Footer() {
         ))}
       </div>
 
-      <div className="border-t border-slate-200">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
+      <div className="border-t border-stone-200">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-stone-500 sm:flex-row sm:px-6 lg:px-8">
           <p>© {CURRENT_YEAR} RE:STORE. All rights reserved.</p>
           <p>Built with React and Vite</p>
         </div>

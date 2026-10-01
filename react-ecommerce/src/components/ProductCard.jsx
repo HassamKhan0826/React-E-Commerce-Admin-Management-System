@@ -6,8 +6,8 @@ function ProductCard({ product, onAddToCart }) {
   const discount = Math.round(product.discountPercentage || 0);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-lg">
-      <Link to={`/products/${product.id}`} className="relative block aspect-square bg-slate-100">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-stone-200 bg-cream-50 transition hover:-transtone-y-0.5 hover:shadow-lg">
+      <Link to={`/products/${product.id}`} className="relative block aspect-square bg-cream-200">
         <img
           src={product.thumbnail}
           alt={product.title}
@@ -16,7 +16,7 @@ function ProductCard({ product, onAddToCart }) {
         />
 
         {discount > 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-rose-600 px-2.5 py-1 text-xs font-semibold text-white">
+          <span className="absolute left-3 top-3 rounded-full bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white">
             -{discount}%
           </span>
         )}
@@ -24,24 +24,24 @@ function ProductCard({ product, onAddToCart }) {
 
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-2 text-xs">
-          <span className="font-medium uppercase tracking-wide text-slate-500">
+          <span className="font-medium uppercase tracking-wide text-stone-500">
             {product.category.replace(/-/g, " ")}
           </span>
-          <span className="font-semibold text-amber-500">
-            ★ <span className="text-slate-700">{product.rating.toFixed(1)}</span>
+          <span className="font-semibold text-gold-500">
+            ★ <span className="text-stone-700">{product.rating.toFixed(1)}</span>
           </span>
         </div>
 
-        <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-slate-900">
+        <h3 className="mt-2 line-clamp-2 font-semibold leading-snug text-stone-900">
           {product.title}
         </h3>
 
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-slate-900">
+          <span className="text-lg font-bold text-stone-900">
             {formatCurrency(product.price)}
           </span>
           {discount > 0 && (
-            <span className="text-xs text-slate-400 line-through">
+            <span className="text-xs text-stone-400 line-through">
               {formatCurrency(getOriginalPrice(product.price, product.discountPercentage))}
             </span>
           )}
@@ -50,7 +50,7 @@ function ProductCard({ product, onAddToCart }) {
         <div className="mt-auto grid grid-cols-2 gap-2 pt-4">
           <Link
             to={`/products/${product.id}`}
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-stone-300 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-cream-100"
           >
             View details
           </Link>

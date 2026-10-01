@@ -144,8 +144,8 @@ function Products() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">All products</h1>
-        <p className="mt-2 text-slate-500">
+        <h1 className="text-3xl font-bold tracking-tight text-stone-900">All products</h1>
+        <p className="mt-2 text-stone-500">
           Search by name, description or category.
         </p>
       </div>
@@ -166,7 +166,7 @@ function Products() {
 
       {!loading && !error && (
         <>
-          <p className="mb-4 text-sm text-slate-500">
+          <p className="mb-4 text-sm text-stone-500">
             Showing {filteredProducts.length} of {products.length} products
           </p>
           <ProductList products={filteredProducts} />
