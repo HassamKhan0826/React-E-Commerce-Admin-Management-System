@@ -14,6 +14,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import ProductsManagement from "./pages/dashboard/ProductsManagement";
 import Orders from "./pages/dashboard/Orders";
 import Users from "./pages/dashboard/Users";
+import Messages from "./pages/dashboard/Messages";
 import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
 
@@ -43,6 +44,7 @@ function App() {
         <Route path="products" element={<ProductsManagement />} />
         <Route path="orders" element={<Orders />} />
         <Route path="users" element={<Users />} />
+        <Route path="messages" element={<Messages />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />

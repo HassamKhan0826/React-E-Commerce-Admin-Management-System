@@ -1,12 +1,14 @@
 import { useContext } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/contexts";
+import { getInitials } from "../utils/helpers";
 
 const links = [
   { label: "Overview", path: "/dashboard" },
   { label: "Products", path: "/dashboard/products" },
   { label: "Orders", path: "/dashboard/orders" },
   { label: "Users", path: "/dashboard/users" },
+  { label: "Messages", path: "/dashboard/messages" },
   { label: "Profile", path: "/dashboard/profile" },
   { label: "Settings", path: "/dashboard/settings" },
 ];
@@ -22,14 +24,6 @@ function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const initials = (user?.name || "")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -39,16 +33,14 @@ function Sidebar({ isOpen, onClose }) {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-brand-900/50 md:hidden"
+          className="fixed inset-0 z-40 bg-stone-900/50 md:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col bg-brand-900 transition-transform duration-200 md:sticky md:top-0 md:h-screen md:transtone-x-0 ${
-          isOpen ? "transtone-x-0" : "-transtone-x-full"
-        }`}
+        className={`${isOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-64 shrink-0 flex-col bg-brand-900 md:sticky md:top-0 md:flex md:h-screen`}
       >
         <div className="flex h-16 items-center justify-between border-b border-brand-800 px-5">
           <Link to="/" className="flex items-center gap-2.5">
@@ -62,7 +54,7 @@ function Sidebar({ isOpen, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-brand-800 md:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-300 hover:bg-brand-800 md:hidden"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
@@ -86,8 +78,8 @@ function Sidebar({ isOpen, onClose }) {
 
         <div className="border-t border-brand-800 p-4">
           <div className="flex items-center gap-3 rounded-lg bg-brand-800 p-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
-              {initials}
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-400 text-xs font-bold text-brand-950">
+              {getInitials(user?.name)}
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{user?.name}</p>
