@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
+import { useCart } from "../hooks/useCart";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import Button from "../components/Button";
@@ -22,7 +23,18 @@ function ProductDetails() {
   const { data: product, loading, error, refetch } = useFetch(
     `https://dummyjson.com/products/${id}`,
   );
+  const { addToCart } = useCart();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!added) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setAdded(false), 1800);
+    return () => clearTimeout(timer);
+  }, [added]);
 
   if (loading) {
     return (
@@ -45,6 +57,11 @@ function ProductDetails() {
       </section>
     );
   }
+
+  const handleAdd = () => {
+    addToCart(product);
+    setAdded(true);
+  };
 
   const images = product.images?.length ? product.images : [product.thumbnail];
   const mainImage = images[selectedIndex] ?? images[0];
@@ -124,9 +141,19 @@ function ProductDetails() {
             {inStock ? `In stock — ${product.stock} available` : "Out of stock"}
           </p>
 
-          <Button className="mt-6 w-full py-3 sm:w-auto sm:px-10" disabled={!inStock}>
-            Add to cart
-          </Button>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button className="py-3 sm:px-10" onClick={handleAdd} disabled={!inStock}>
+              {added ? "Added to cart ✓" : "Add to cart"}
+            </Button>
+            {added && (
+              <Link
+                to="/cart"
+                className="inline-flex items-center justify-center rounded-lg border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-cream-100"
+              >
+                View cart
+              </Link>
+            )}
+          </div>
 
           <dl className="mt-8 grid gap-4 border-t border-stone-200 pt-6 text-sm sm:grid-cols-3">
             <div>
