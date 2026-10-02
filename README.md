@@ -102,7 +102,7 @@ Use this account to open the admin dashboard:
 
 | Email | Password |
 | --- | --- |
-| `admin@example.com` | `admin123` |
+| `khan@store.com` | `khan8` |
 
 ---
 

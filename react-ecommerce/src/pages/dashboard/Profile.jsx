@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
 import { AuthContext } from "../../context/contexts";
-import { getInitials } from "../../utils/helpers";
+import { DEMO_CREDENTIALS, getInitials } from "../../utils/helpers";
 
 const inputClass =
   "mt-1.5 w-full rounded-lg border border-stone-300 bg-cream-50 px-3 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
@@ -109,7 +109,7 @@ function Profile() {
 
           <div>
             <label htmlFor="profile-login" className="text-sm font-medium text-stone-700">Login email</label>
-            <input id="profile-login" value="admin@example.com" disabled className={readOnlyClass} />
+            <input id="profile-login" value={DEMO_CREDENTIALS.email} disabled className={readOnlyClass} />
           </div>
 
           <div className="flex items-center gap-3 sm:col-span-2">

@@ -1,6 +1,6 @@
 export const DEMO_CREDENTIALS = {
-  email: "admin@example.com",
-  password: "admin123",
+  email: "khan@store.com",
+  password: "khan8",
 };
 
 export function formatCurrency(value) {
