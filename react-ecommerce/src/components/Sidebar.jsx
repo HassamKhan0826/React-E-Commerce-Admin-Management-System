@@ -45,7 +45,7 @@ function Sidebar({ isOpen, onClose }) {
         <div className="flex h-16 items-center justify-between border-b border-brand-800 px-5">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">
-              RS
+              HT
             </span>
             <span className="font-bold text-white">RE:STORE</span>
           </Link>

@@ -33,7 +33,7 @@ function Footer() {
         <div className="lg:col-span-2">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-              RS
+              HT
             </span>
             <span className="text-lg font-bold tracking-tight text-stone-900">
               RE:STORE
