@@ -36,6 +36,29 @@
   --color-gold-900: #56421d;
 }
 
+/* Dark mode: the same class names, different colors */
+.dark {
+  color-scheme: dark;
+
+  /* Surfaces become deep warm browns */
+  --color-cream-50: #221b1d;
+  --color-cream-100: #181314;
+  --color-cream-200: #2e2528;
+
+  /* Text becomes light, borders become dark */
+  --color-stone-200: #3a3033;
+  --color-stone-500: #a8a29e;
+  --color-stone-600: #c4bdb6;
+  --color-stone-700: #d6d0c9;
+  --color-stone-800: #e7e1da;
+  --color-stone-900: #f5efe6;
+
+  /* Brighter burgundy and gold so they stay readable on dark */
+  --color-brand-600: #c4485c;
+  --color-brand-700: #a83a4d;
+  --color-gold-700: #dfc06b;
+}
+
 body {
   margin: 0;
   min-width: 320px;
