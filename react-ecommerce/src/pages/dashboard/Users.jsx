@@ -3,10 +3,12 @@ import Card from "../../components/Card";
 import SearchBar from "../../components/SearchBar";
 import UserRow from "../../components/UserRow";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useCustomer } from "../../hooks/useCustomer";
 import { initialUsers } from "../../utils/mockData";
 
 function Users() {
   const [users, setUsers] = useLocalStorage("users", initialUsers);
+  const { endSessionFor } = useCustomer();
   const [search, setSearch] = useState("");
 
   const filteredUsers = useMemo(() => {
@@ -26,16 +28,18 @@ function Users() {
   );
 
   const toggleStatus = useCallback(
-    (userId) => {
+    (user) => {
+      const newStatus = user.status === "Active" ? "Inactive" : "Active";
+
       setUsers((current) =>
-        current.map((user) =>
-          user.id === userId
-            ? { ...user, status: user.status === "Active" ? "Inactive" : "Active" }
-            : user,
-        ),
+        current.map((item) => (item.id === user.id ? { ...item, status: newStatus } : item)),
       );
+
+      if (newStatus === "Inactive") {
+        endSessionFor(user.email);
+      }
     },
-    [setUsers],
+    [setUsers, endSessionFor],
   );
 
   return (

@@ -24,7 +24,7 @@ const UserRow = memo(function UserRow({ user, onToggleStatus }) {
       <td className="px-5 py-4">
         <button
           type="button"
-          onClick={() => onToggleStatus(user.id)}
+          onClick={() => onToggleStatus(user)}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
             isActive
               ? "border border-stone-300 text-stone-700 hover:bg-cream-100"
