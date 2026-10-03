@@ -11,6 +11,8 @@ The project was built as the final project of a React internship. It brings toge
 
 ---
 
+**Live demo:** [react-ht-store.vercel.app](https://react-ht-store.vercel.app)
+
 ## Table of contents
 
 - [Screenshots](#screenshots)
