@@ -1,7 +1,9 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext, ThemeContext } from "../context/contexts";
 import { useCart } from "../hooks/useCart";
+import { useCustomer } from "../hooks/useCustomer";
+import { getInitials } from "../utils/helpers";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -22,6 +24,8 @@ const mobileLinkClass = ({ isActive }) =>
     isActive ? "bg-brand-50 text-brand-700" : "text-stone-700 hover:bg-cream-200"
   }`;
 
+const menuItemClass = "block w-full rounded-md px-3 py-2 text-left text-sm hover:bg-cream-200";
+
 function ThemeIcon({ theme }) {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -41,16 +45,56 @@ function Navbar() {
   const { isAuthenticated, logout } = useContext(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { totalItems } = useCart();
+  const { currentCustomer, isSignedIn, signOut } = useCustomer();
   const navigate = useNavigate();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const accountRef = useRef(null);
 
-  const closeMenu = () => setIsMenuOpen(false);
+  useEffect(() => {
+    if (!isAccountOpen) {
+      return undefined;
+    }
 
-  const handleLogout = () => {
-    logout();
-    closeMenu();
+    const handleClickOutside = (event) => {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setIsAccountOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsAccountOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAccountOpen]);
+
+  const closeMenus = () => {
+    setIsMenuOpen(false);
+    setIsAccountOpen(false);
+  };
+
+  const handleSignOut = () => {
+    signOut();
+    closeMenus();
     navigate("/");
   };
+
+  const handleAdminLogout = () => {
+    logout();
+    closeMenus();
+    navigate("/");
+  };
+
+  const firstName = currentCustomer?.name?.split(" ")[0];
 
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-cream-50/90 backdrop-blur">
@@ -76,7 +120,7 @@ function Navbar() {
             </svg>
           </button>
 
-          <Link to="/" onClick={closeMenu} className="flex items-center gap-2.5">
+          <Link to="/" onClick={closeMenus} className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
               HT
             </span>
@@ -117,7 +161,7 @@ function Navbar() {
 
           <Link
             to="/cart"
-            onClick={closeMenu}
+            onClick={closeMenus}
             aria-label={`Cart, ${totalItems} items`}
             className="relative flex h-10 w-10 items-center justify-center rounded-lg text-stone-700 hover:bg-cream-200"
           >
@@ -133,22 +177,76 @@ function Navbar() {
             )}
           </Link>
 
-          {isAuthenticated ? (
+          <div className="relative" ref={accountRef}>
             <button
               type="button"
-              onClick={handleLogout}
-              className="ml-1 hidden rounded-lg border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-cream-100 sm:inline-flex"
+              onClick={() => setIsAccountOpen((open) => !open)}
+              aria-haspopup="menu"
+              aria-expanded={isAccountOpen}
+              aria-label="Account menu"
+              className="flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-medium text-stone-700 hover:bg-cream-200"
             >
-              Logout
+              {isSignedIn ? (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
+                  {getInitials(currentCustomer.name)}
+                </span>
+              ) : (
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21a8 8 0 0 1 16 0" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">{isSignedIn ? `Hi, ${firstName}` : "Account"}</span>
             </button>
-          ) : (
-            <Link
-              to="/login"
-              className="ml-1 hidden rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 sm:inline-flex"
-            >
-              Admin login
-            </Link>
-          )}
+
+            {isAccountOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-stone-200 bg-cream-50 p-2 shadow-lg"
+              >
+                {isSignedIn ? (
+                  <>
+                    <div className="border-b border-stone-200 px-3 pb-2 pt-1">
+                      <p className="truncate text-sm font-semibold text-stone-900">{currentCustomer.name}</p>
+                      <p className="truncate text-xs text-stone-500">{currentCustomer.email}</p>
+                    </div>
+                    <Link to="/my-orders" role="menuitem" onClick={closeMenus} className={`mt-1 text-stone-700 ${menuItemClass}`}>
+                      My orders
+                    </Link>
+                    <button type="button" role="menuitem" onClick={handleSignOut} className={`text-stone-700 ${menuItemClass}`}>
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/signin" role="menuitem" onClick={closeMenus} className={`font-semibold text-stone-900 ${menuItemClass}`}>
+                      Sign in
+                    </Link>
+                    <Link to="/signup" role="menuitem" onClick={closeMenus} className={`text-stone-700 ${menuItemClass}`}>
+                      Create account
+                    </Link>
+                  </>
+                )}
+
+                <div className="my-1 border-t border-stone-200" />
+
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/dashboard" role="menuitem" onClick={closeMenus} className={`text-stone-700 ${menuItemClass}`}>
+                      Admin dashboard
+                    </Link>
+                    <button type="button" role="menuitem" onClick={handleAdminLogout} className={`text-red-600 ${menuItemClass}`}>
+                      Admin logout
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/login" role="menuitem" onClick={closeMenus} className={`text-stone-500 ${menuItemClass}`}>
+                    Admin login
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -160,29 +258,16 @@ function Navbar() {
                 key={item.path}
                 to={item.path}
                 end={item.path === "/"}
-                onClick={closeMenu}
+                onClick={closeMenus}
                 className={mobileLinkClass}
               >
                 {item.label}
               </NavLink>
             ))}
 
-            {isAuthenticated ? (
-              <>
-                <NavLink to="/dashboard" onClick={closeMenu} className={mobileLinkClass}>
-                  Dashboard
-                </NavLink>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <NavLink to="/login" onClick={closeMenu} className={mobileLinkClass}>
-                Admin login
+            {isAuthenticated && (
+              <NavLink to="/dashboard" onClick={closeMenus} className={mobileLinkClass}>
+                Dashboard
               </NavLink>
             )}
           </div>
