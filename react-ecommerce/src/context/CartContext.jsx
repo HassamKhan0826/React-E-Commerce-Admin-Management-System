@@ -1,18 +1,58 @@
-import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { CartContext } from "./contexts";
 import cartReducer from "../reducers/cartReducer";
 import { getStoredValue, setStoredValue } from "../hooks/useLocalStorage";
 
-const CART_STORAGE_KEY = "cart";
+const GUEST = "guest";
+
+function getCartKey(owner) {
+  return `cart:${owner}`;
+}
+
+function getInitialOwner() {
+  return getStoredValue("currentCustomer", null)?.id ?? GUEST;
+}
+
+function mergeCarts(accountCart, guestCart) {
+  const merged = accountCart.map((item) => ({ ...item }));
+
+  guestCart.forEach((guestItem) => {
+    const existing = merged.find((item) => item.id === guestItem.id);
+    if (existing) {
+      existing.quantity += guestItem.quantity;
+    } else {
+      merged.push({ ...guestItem });
+    }
+  });
+
+  return merged;
+}
 
 export function CartProvider({ children }) {
+  const [cartOwner, setCartOwner] = useState(getInitialOwner);
   const [cart, dispatch] = useReducer(cartReducer, [], () =>
-    getStoredValue(CART_STORAGE_KEY, []),
+    getStoredValue(getCartKey(getInitialOwner()), []),
   );
 
   useEffect(() => {
-    setStoredValue(CART_STORAGE_KEY, cart);
-  }, [cart]);
+    setStoredValue(getCartKey(cartOwner), cart);
+  }, [cartOwner, cart]);
+
+  const switchCartOwner = useCallback((newOwner) => {
+    const owner = newOwner ?? GUEST;
+    let nextCart = getStoredValue(getCartKey(owner), []);
+
+    if (owner !== GUEST) {
+      const guestCart = getStoredValue(getCartKey(GUEST), []);
+      if (guestCart.length > 0) {
+        nextCart = mergeCarts(nextCart, guestCart);
+        setStoredValue(getCartKey(GUEST), []);
+      }
+    }
+
+    setCartOwner(owner);
+    dispatch({ type: "LOAD_CART", payload: nextCart });
+  }, []);
 
   const addToCart = useCallback((product) => {
     dispatch({
@@ -61,10 +101,11 @@ export function CartProvider({ children }) {
       increaseQuantity,
       decreaseQuantity,
       clearCart,
+      switchCartOwner,
       totalItems,
       totalPrice,
     }),
-    [cart, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, totalItems, totalPrice],
+    [cart, addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart, switchCartOwner, totalItems, totalPrice],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
