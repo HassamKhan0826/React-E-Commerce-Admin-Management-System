@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { useCart } from "../hooks/useCart";
+import { useBuyNow } from "../hooks/useBuyNow";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import Button from "../components/Button";
@@ -24,6 +25,7 @@ function ProductDetails() {
     `https://dummyjson.com/products/${id}`,
   );
   const { addToCart } = useCart();
+  const buyNow = useBuyNow();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [added, setAdded] = useState(false);
 
@@ -142,15 +144,18 @@ function ProductDetails() {
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Button className="py-3 sm:px-10" onClick={handleAdd} disabled={!inStock}>
+            <Button className="py-3 sm:px-10" onClick={() => buyNow(product)} disabled={!inStock}>
+              Buy now
+            </Button>
+            <Button variant="secondary" className="py-3 sm:px-8" onClick={handleAdd} disabled={!inStock}>
               {added ? "Added to cart ✓" : "Add to cart"}
             </Button>
             {added && (
               <Link
                 to="/cart"
-                className="inline-flex items-center justify-center rounded-lg border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-cream-100"
+                className="inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-brand-600 hover:underline"
               >
-                View cart
+                View cart →
               </Link>
             )}
           </div>

@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import CartItem from "../components/CartItem";
 import EmptyState from "../components/EmptyState";
 import Button from "../components/Button";
 import { useCart } from "../hooks/useCart";
+import { useCustomer } from "../hooks/useCustomer";
 import { formatCurrency } from "../utils/helpers";
 
 const FREE_SHIPPING_LIMIT = 50;
@@ -18,25 +18,13 @@ function Cart() {
     removeFromCart,
     clearCart,
   } = useCart();
-
-  const [orderPlaced, setOrderPlaced] = useState(false);
-
-  const handleCheckout = () => {
-    clearCart();
-    setOrderPlaced(true);
-  };
+  const { isSignedIn } = useCustomer();
 
   const remainingForFreeShipping = Math.max(FREE_SHIPPING_LIMIT - totalPrice, 0);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight text-stone-900">Shopping cart</h1>
-
-      {orderPlaced && cart.length === 0 && (
-        <div role="status" className="mt-6 rounded-lg bg-gold-50 px-4 py-3 text-sm font-medium text-gold-800">
-          Order placed. Thank you for shopping with RE:STORE!
-        </div>
-      )}
 
       {cart.length === 0 ? (
         <div className="mt-8">
@@ -98,9 +86,18 @@ function Cart() {
               </p>
             )}
 
-            <Button className="mt-6 w-full py-3" onClick={handleCheckout}>
+            <Link
+              to="/checkout"
+              className="mt-6 flex w-full items-center justify-center rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700"
+            >
               Proceed to checkout
-            </Button>
+            </Link>
+
+            {!isSignedIn && (
+              <p className="mt-3 text-center text-xs text-stone-500">
+                You'll be asked to sign in or create an account first.
+              </p>
+            )}
 
             <Link
               to="/products"

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Button from "./Button";
 import { formatCurrency, getOriginalPrice } from "../utils/helpers";
 
-const ProductCard = memo(function ProductCard({ product, onAddToCart }) {
+const ProductCard = memo(function ProductCard({ product, onAddToCart, onBuyNow }) {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
@@ -71,8 +71,11 @@ const ProductCard = memo(function ProductCard({ product, onAddToCart }) {
           >
             View details
           </Link>
-          <Button size="sm" className="whitespace-nowrap" onClick={handleAdd}>
+          <Button size="sm" variant="secondary" className="whitespace-nowrap" onClick={handleAdd}>
             {added ? "Added ✓" : "Add to cart"}
+          </Button>
+          <Button size="sm" className="col-span-2 whitespace-nowrap" onClick={() => onBuyNow(product)}>
+            Buy now
           </Button>
         </div>
       </div>
