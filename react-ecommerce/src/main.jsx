@@ -6,6 +6,7 @@ import "./index.css";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { CustomerProvider } from "./context/CustomerContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <ThemeProvider>
         <AuthProvider>
           <CartProvider>
-            <App />
+            <CustomerProvider>
+              <App />
+            </CustomerProvider>
           </CartProvider>
         </AuthProvider>
       </ThemeProvider>
