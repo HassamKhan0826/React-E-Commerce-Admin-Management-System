@@ -1,6 +1,6 @@
 # RE:STORE — React E-Commerce & Admin Management System
 
-A complete e-commerce web application built with **React and Vite**. Customers can browse, search and filter products, view product details and manage a shopping cart. Store administrators get a **protected dashboard** to manage products, orders, users and customer messages, edit their profile and change settings, including a **dark/light theme**.
+A complete e-commerce web application built with **React and Vite**. Customers can browse, search and filter products, create an account, keep their own cart, buy products through a full checkout, and track their orders. Store administrators get a **protected dashboard** to manage products, orders, users and customer messages, edit their profile and change settings, including a **dark/light theme**.
 
 The project was built as the final project of a React internship. It brings together authentication, protected and nested routing, API integration, global state with Context API and `useReducer`, custom hooks, performance optimization, controlled forms, localStorage persistence and a fully responsive UI.
 
@@ -39,39 +39,56 @@ The project was built as the final project of a React internship. It brings toge
 | --- | --- |
 | ![Product details page](screenshots/product-details.png) | ![Cart page](screenshots/cart.png) |
 
-| Admin dashboard | Products management |
+| Sign up | Checkout |
 | --- | --- |
-| ![Dashboard overview](screenshots/dashboard.png) | ![Products management](screenshots/products-management.png) |
+| ![Sign up page](screenshots/signup.png) | ![Checkout page](screenshots/checkout.png) |
 
-| Light mode | Mobile view |
+| My orders | Admin dashboard |
 | --- | --- |
-| ![Light mode](screenshots/light-mode.png) | ![Mobile view](screenshots/mobile.png) |
+| ![My orders page](screenshots/my-orders.png) | ![Dashboard overview](screenshots/dashboard.png) |
+
+| Products management | Dark mode |
+| --- | --- |
+| ![Products management](screenshots/products-management.png) | ![Dark mode](screenshots/dark-mode.png) |
+
+| About | Mobile view  |
+| --- | --- |
+| ![Mobile view](screenshots/about.png) | ![Mobile view](screenshots/mobile.png) |
 
 ---
 
 ## Features
 
-### Customer area
+### Store
 
 - **Home page** with a hero section, store introduction, top-rated featured products and a call to action
 - **Product catalog** loaded from the DummyJSON API (194 products)
 - **Search** by product name, description or category, combined with a **category filter**
 - **Product details** page on a dynamic route (`/products/:id`) with an image gallery, price, discount, rating, stock, brand, shipping, warranty and return policy
-- **Shopping cart**: add, remove, increase and decrease quantity, clear the cart, total items and total price, with a free-shipping progress hint
-- **Cart persistence**: the cart is saved and restored after a refresh
+- **Shopping cart**: add, remove, increase and decrease quantity, clear the cart, total items and total price, with a free-shipping hint
 - **Contact form** with validation, error messages and a success message; messages are delivered to the admin inbox
 - **Dark and light theme**, remembered after a refresh
 - **Loading, error and empty states** on every data-driven section, with a "Try again" button for failed requests
 - **404 page** for unknown routes
 
+### Customer accounts and checkout
+
+- **Sign up and sign in** with validation; passwords are **hashed with SHA-256** before they are saved
+- **Account menu** in the navbar showing the signed-in customer, My orders and Sign out
+- **A cart for every customer**: guests can shop without an account; when they sign in, their guest cart is merged into their account cart, which is kept after signing out
+- **Buy now** on every product: signed-out customers are sent to sign up and brought back to checkout with the same product
+- **Checkout** for a single product or the whole cart, with shipping details, cash on delivery or a simulated card payment, and an order confirmation
+- **My orders**: customers see only their own orders, follow the status with a progress tracker, and can cancel orders that are still pending
+- **Protected customer routes**: checkout and My orders require a signed-in customer
+
 ### Admin area (login required)
 
 - **Authentication** with a demo account; login state survives a refresh
-- **Protected routes**: every `/dashboard` page redirects to login when signed out, then returns the user to the page they wanted
+- **Protected routes**: every `/dashboard` page redirects to login when signed out, then returns the admin to the page they wanted
 - **Dashboard overview**: total products, orders, users and revenue, recent orders, recent products and quick actions
 - **Products management**: product table with search, and **view, add, edit and delete** in a reusable modal (changes are saved in the browser)
-- **Orders**: orders table with **status filtering** (Pending, Processing, Completed, Cancelled) and status updates
-- **Users**: users table with **search** and activate/deactivate
+- **Orders**: orders table with **status filtering** (Pending, Processing, Completed, Cancelled) and status updates; customer orders appear here automatically
+- **Users**: users table with **search** and activate/deactivate; new customers appear here, and deactivating a customer signs them out
 - **Messages**: inbox for contact form messages with read/unread status, an unread filter, a detail view, reply by email and delete
 - **Profile**: editable controlled form with validation; the new name appears instantly across the app
 - **Settings**: dark mode switch, notifications, language, currency and account preferences
@@ -87,9 +104,10 @@ The project was built as the final project of a React internship. It brings toge
 | [Vite](https://vite.dev/) | Development server and build tool |
 | [React Router](https://reactrouter.com/) | Client-side routing: nested, dynamic and protected routes |
 | [Tailwind CSS](https://tailwindcss.com/) | Utility-first styling with a custom color theme |
-| Context API + `useReducer` | Global state for authentication, cart and theme |
+| Context API + `useReducer` | Global state for admin auth, customers, cart and theme |
 | Fetch API | Loading data from the REST API (no Axios) |
-| localStorage | Persisting login, cart, theme and admin data |
+| Web Crypto API | Hashing customer passwords (SHA-256) |
+| localStorage | Persisting accounts, carts, orders, theme and admin data |
 | ESLint | Code quality checks |
 
 No Redux, Axios or UI component libraries (Material UI, Bootstrap, Ant Design) are used.
@@ -98,11 +116,13 @@ No Redux, Axios or UI component libraries (Material UI, Bootstrap, Ant Design) a
 
 ## Demo credentials
 
-Use this account to open the admin dashboard:
+**Admin dashboard** (`/login`):
 
 | Email | Password |
 | --- | --- |
 | `khan@store.com` | `khan8` |
+
+**Customer accounts:** create one on the **Sign up** page (`/signup`), or click **Buy now** on any product while signed out.
 
 ---
 
@@ -117,7 +137,7 @@ Product data comes from the free [DummyJSON Products API](https://dummyjson.com/
 | `https://dummyjson.com/products?limit=4&sortBy=rating&order=desc` | Top-rated featured products (Home) |
 | `https://dummyjson.com/products?limit=5&sortBy=id&order=desc` | Recent products (Dashboard) |
 
-DummyJSON doesn't save changes, so product management, orders, users and messages are stored in the browser with localStorage.
+DummyJSON doesn't save changes, so accounts, carts, orders, product management, users and messages are stored in the browser with localStorage.
 
 ---
 
@@ -145,6 +165,8 @@ npm run dev
 ```
 
 Then open the URL shown in the terminal (usually `http://localhost:5173`).
+
+Password hashing uses the browser's Web Crypto API, which only works on secure addresses: `localhost` and `https`.
 
 ### Available scripts
 
@@ -175,29 +197,33 @@ react-ecommerce/
     │   ├── CartItem.jsx          # One cart row (React.memo)
     │   ├── CategoryFilter.jsx    # Category dropdown
     │   ├── Container.jsx         # Page width and spacing wrapper
+    │   ├── CustomerRoute.jsx     # Protects customer pages (checkout, my orders)
     │   ├── DashboardLayout.jsx   # Admin layout: sidebar + header + Outlet
     │   ├── EmptyState.jsx        # "Nothing here" message
     │   ├── ErrorMessage.jsx      # Error box with "Try again"
     │   ├── Footer.jsx
     │   ├── Loading.jsx           # Loading spinner
     │   ├── Modal.jsx             # Reusable popup (children)
-    │   ├── Navbar.jsx            # Store navbar, cart count, theme toggle
-    │   ├── ProductCard.jsx       # One product (React.memo)
+    │   ├── Navbar.jsx            # Store navbar, cart count, theme toggle, account menu
+    │   ├── ProductCard.jsx       # One product with Add to cart and Buy now (React.memo)
     │   ├── ProductList.jsx       # Product grid
-    │   ├── ProtectedRoute.jsx    # Blocks admin pages when signed out
+    │   ├── ProtectedRoute.jsx    # Protects admin pages
     │   ├── PublicLayout.jsx      # Store layout: navbar + Outlet + footer
     │   ├── SearchBar.jsx         # Reusable search input
     │   ├── Sidebar.jsx           # Admin navigation (mobile drawer)
     │   └── UserRow.jsx           # One user row (React.memo)
     │
     ├── context/
-    │   ├── contexts.js           # AuthContext, CartContext, ThemeContext
-    │   ├── AuthContext.jsx       # Login, logout, user profile
-    │   ├── CartContext.jsx       # Cart with useReducer
+    │   ├── contexts.js           # AuthContext, CartContext, ThemeContext, CustomerContext
+    │   ├── AuthContext.jsx       # Admin login, logout, profile
+    │   ├── CartContext.jsx       # Cart with useReducer, one cart per customer
+    │   ├── CustomerContext.jsx   # Customer sign up, sign in, sign out
     │   └── ThemeContext.jsx      # Dark / light theme
     │
     ├── hooks/
+    │   ├── useBuyNow.js          # Buy now: checkout or sign up first
     │   ├── useCart.js            # Read the cart context
+    │   ├── useCustomer.js        # Read the customer context
     │   ├── useFetch.js           # Fetch data with loading/error states
     │   └── useLocalStorage.js    # useState that is saved to localStorage
     │
@@ -206,9 +232,13 @@ react-ecommerce/
     │   ├── Products.jsx
     │   ├── ProductDetails.jsx
     │   ├── Cart.jsx
+    │   ├── Checkout.jsx          # Shipping, payment, order confirmation
+    │   ├── MyOrders.jsx          # Customer's orders with status tracker
+    │   ├── SignUp.jsx
+    │   ├── SignIn.jsx
     │   ├── About.jsx
     │   ├── Contact.jsx
-    │   ├── Login.jsx
+    │   ├── Login.jsx             # Admin login
     │   ├── NotFound.jsx
     │   └── dashboard/
     │       ├── Dashboard.jsx
@@ -223,7 +253,7 @@ react-ecommerce/
     │   └── cartReducer.js        # All cart actions
     │
     └── utils/
-        ├── helpers.js            # Formatting and shared helpers
+        ├── helpers.js            # Formatting, password hashing and shared helpers
         └── mockData.js           # Starting orders and users
 ```
 
@@ -233,18 +263,20 @@ react-ecommerce/
 
 ### How the app is put together
 
-Context providers wrap the whole app, so any component can read authentication, cart and theme state without prop drilling.
+Context providers wrap the whole app, so any component can read the theme, admin login, cart and customer without prop drilling. `CartProvider` sits above `CustomerProvider`, because signing in and out switches which customer's cart is shown.
 
 ```mermaid
 flowchart TD
   A["main.jsx"] --> B["BrowserRouter"]
   B --> C["ThemeProvider"]
-  C --> D["AuthProvider"]
+  C --> D["AuthProvider (admin)"]
   D --> E["CartProvider"]
-  E --> F["App.jsx (Routes)"]
-  F --> G["PublicLayout<br/>Navbar + Outlet + Footer"]
-  F --> H["ProtectedRoute"]
-  H --> I["DashboardLayout<br/>Sidebar + Outlet"]
+  E --> F["CustomerProvider"]
+  F --> G["App.jsx (Routes)"]
+  G --> H["PublicLayout<br/>Navbar + Outlet + Footer"]
+  H --> I["CustomerRoute<br/>checkout, my-orders"]
+  G --> J["ProtectedRoute"]
+  J --> K["DashboardLayout<br/>Sidebar + Outlet"]
 ```
 
 ### Routes
@@ -257,6 +289,10 @@ flowchart LR
   R --> C["/cart"]
   R --> A["/about"]
   R --> CO["/contact"]
+  R --> SU["/signup"]
+  R --> SI["/signin"]
+  R --> CH["/checkout 👤"]
+  R --> MO["/my-orders 👤"]
   R --> L["/login"]
   R --> NF["* → 404"]
   R --> D["/dashboard 🔒"]
@@ -269,29 +305,44 @@ flowchart LR
   D --> D7["settings"]
 ```
 
-### Login and protected routes
+👤 = signed-in customer required · 🔒 = admin login required
+
+### Buy now and checkout
 
 ```mermaid
 flowchart TD
-  A["User opens /dashboard/orders"] --> B{"Logged in?"}
+  A["Buy now"] --> B{"Customer signed in?"}
+  B -- "Yes" --> E["Checkout with the product"]
+  B -- "No" --> C["Sign up / Sign in<br/>product kept in route state"]
+  C --> E
+  E --> F["Shipping + payment<br/>validated"]
+  F --> G["Order saved to the shared orders list"]
+  G --> H["Order confirmation"]
+  G --> I["Customer: My orders"]
+  G --> J["Admin: Orders + revenue"]
+```
+
+### One cart per customer
+
+```mermaid
+flowchart LR
+  A["Guest adds products"] --> B["cart:guest"]
+  B --> C{"Signs in"}
+  C --> D["Merged into cart:customerId"]
+  D --> E["Signs out → empty guest cart"]
+  E --> F["Signs in again → cart restored"]
+```
+
+### Admin login and protected routes
+
+```mermaid
+flowchart TD
+  A["User opens /dashboard/orders"] --> B{"Admin logged in?"}
   B -- "Yes" --> C["Show the page"]
   B -- "No" --> D["Redirect to /login<br/>'Please login to continue.'"]
   D --> E{"Credentials valid?"}
   E -- "No" --> F["Show error"]
-  E -- "Yes" --> G["Save login in localStorage<br/>Return to /dashboard/orders"]
-```
-
-### Cart data flow
-
-```mermaid
-flowchart LR
-  A["ProductCard<br/>Add to cart"] --> B["CartContext<br/>addToCart()"]
-  B --> C["dispatch(action)"]
-  C --> D["cartReducer"]
-  D --> E["New cart state"]
-  E --> F["localStorage"]
-  E --> G["Navbar badge"]
-  E --> H["Cart page"]
+  E -- "Yes" --> G["Return to /dashboard/orders"]
 ```
 
 ### State management
@@ -299,10 +350,11 @@ flowchart LR
 | Data | Managed with | Why |
 | --- | --- | --- |
 | Form inputs, search text, filters, menus | `useState` | Local to one component |
-| Logged-in user | `AuthContext` | Needed by Navbar, Sidebar, Login, ProtectedRoute, Profile |
-| Cart | `CartContext` + `useReducer` | Shared across pages, with five related actions |
+| Admin login | `AuthContext` | Needed by Navbar, Sidebar, Login, ProtectedRoute, Profile |
+| Signed-in customer | `CustomerContext` | Needed by Navbar, checkout, My orders, Buy now |
+| Cart | `CartContext` + `useReducer` | Shared across pages, with related actions, one cart per customer |
 | Theme | `ThemeContext` | Affects the whole app |
-| Products, orders, users, messages, settings | `useLocalStorage` | Saved in the browser (no backend) |
+| Accounts, orders, products, users, messages, settings | `useLocalStorage` | Saved in the browser (no backend) |
 
 ---
 
@@ -310,20 +362,20 @@ flowchart LR
 
 | Concept | Where it is used |
 | --- | --- |
-| `useState` | Forms, search, filters, mobile menu, modals |
-| `useEffect` | Fetching data, saving to localStorage, focusing inputs, theme class, timers |
-| `useRef` | Auto-focus on the product search, login and contact forms |
-| `useContext` | Reading auth, cart and theme state |
-| `useReducer` | Cart state with `ADD_TO_CART`, `REMOVE_FROM_CART`, `INCREASE_QUANTITY`, `DECREASE_QUANTITY`, `CLEAR_CART` |
-| `useMemo` | Filtered products, cart totals, revenue, status counts |
-| `useCallback` | `addToCart`, `removeFromCart`, `deleteProduct`, `toggleStatus` passed to memoized children |
+| `useState` | Forms, search, filters, mobile menu, account menu, modals |
+| `useEffect` | Fetching data, saving to localStorage, focusing inputs, theme class, timers, event listeners |
+| `useRef` | Auto-focus on forms and search; closing the account menu on an outside click |
+| `useContext` | Reading admin auth, customer, cart and theme state |
+| `useReducer` | Cart state with `ADD_TO_CART`, `REMOVE_FROM_CART`, `INCREASE_QUANTITY`, `DECREASE_QUANTITY`, `CLEAR_CART`, `LOAD_CART` |
+| `useMemo` | Filtered products, cart and checkout totals, revenue, status counts, customer orders |
+| `useCallback` | Cart actions, `buyNow`, sign in/out functions, `deleteProduct`, `toggleStatus` passed to memoized children |
 | `React.memo` | `ProductCard`, `CartItem`, `UserRow`, `ProductRow` |
-| Custom hooks | `useFetch`, `useLocalStorage`, `useCart` |
+| Custom hooks | `useFetch`, `useLocalStorage`, `useCart`, `useCustomer`, `useBuyNow` |
 | `children` and composition | `Card`, `Modal`, `Button`, `Container`, `EmptyState` |
 | React Router | `BrowserRouter`, `Routes`, `Route`, `Link`, `NavLink`, `Outlet`, `Navigate`, `useNavigate`, `useParams`, `useLocation` |
-| Routing patterns | Nested routes, dynamic route, protected routes, 404 route |
+| Routing patterns | Nested routes, dynamic route, admin and customer protected routes, route state, 404 route |
 
-`React.memo` and `useCallback` work together: the cart functions keep the same reference between renders, so product cards and cart rows only re-render when their own data changes.
+`React.memo` and `useCallback` work together: functions passed to list items keep the same reference between renders, so product cards and table rows only re-render when their own data changes.
 
 ---
 
@@ -333,11 +385,14 @@ flowchart LR
 | --- | --- |
 | `isAuthenticated` | Whether the admin is logged in |
 | `storeUser` | Admin name, email and role |
-| `cart` | Cart items and quantities |
+| `customers` | Customer accounts (passwords stored as SHA-256 hashes) |
+| `currentCustomer` | The signed-in customer (no password) |
+| `cart:guest` | Cart of a shopper who isn't signed in |
+| `cart:<customerId>` | Each customer's own cart |
+| `orders` | All orders: demo orders and orders placed through checkout |
+| `users` | Users and their active/inactive status, including new customers |
 | `theme` | `"light"` or `"dark"` |
 | `managedProducts` | Products after admin changes (empty until the first change) |
-| `orders` | Orders and their statuses |
-| `users` | Users and their active/inactive status |
 | `messages` | Messages sent from the Contact page |
 | `preferences` | Admin settings |
 
@@ -362,17 +417,26 @@ Colors are defined once as Tailwind theme tokens in `src/index.css`, so the whol
 
 ## Notes and limitations
 
-- **Frontend only:** there is no backend. Authentication uses a single demo account, and admin data is saved in the browser, so it is not shared between devices.
-- **Simulated product management:** DummyJSON does not store changes, so edits, additions and deletions are kept in localStorage. "Reset" in Products management restores the API data.
-- **Checkout** is simulated: it clears the cart and shows a confirmation.
+- **Frontend only:** there is no backend. Accounts, carts and orders are saved in the browser, so they exist only on that device and browser.
+- **Passwords:** customer passwords are hashed with SHA-256 before saving, but this is not real security, because everything runs in the browser. A real store would verify passwords on a server.
+- **Payments are simulated:** card details are checked for format only and never saved; orders store only the last four digits.
+- **Admin login** uses a single demo account.
+- **Simulated product management:** DummyJSON does not store changes, so admin edits are kept in localStorage, and products added by the admin don't appear in the store. "Reset" restores the API data.
+- **Stock** doesn't decrease after a purchase, because product data comes from the API.
 - **Reply by email** opens the computer's default email app with a `mailto:` link.
-- **Settings:** dark mode is fully connected. The other preferences (language, currency, rows per page, notifications) are saved but not yet applied across the app.
+- **Settings:** dark mode is fully connected. The other preferences are saved but not yet applied across the app.
 
 ---
 
+
 ## Author
 
-**Hassam Khan**
-Final project — React.js internship
+**Hassam Khan** — React.js Developer
+Final project for the React.js internship at **Enigma Software Solutions**
 
 GitHub: [@HassamKhan0826](https://github.com/HassamKhan0826)
+
+## Acknowledgements
+
+Thanks to **Enigma Software Solutions** for the internship opportunity, and to **Sohaib Saleem**, Full stack Developer, Next.js, for guidance and code reviews throughout the project.
+
