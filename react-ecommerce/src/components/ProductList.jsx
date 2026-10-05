@@ -1,11 +1,17 @@
+import { useMemo } from "react";
 import ProductCard from "./ProductCard";
 import EmptyState from "./EmptyState";
 import { useCart } from "../hooks/useCart";
 import { useBuyNow } from "../hooks/useBuyNow";
 
 function ProductList({ products }) {
-  const { addToCart } = useCart();
+  const { cart, addToCart, increaseQuantity, decreaseQuantity } = useCart();
   const buyNow = useBuyNow();
+
+  const quantities = useMemo(
+    () => new Map(cart.map((item) => [item.id, item.quantity])),
+    [cart],
+  );
 
   if (products.length === 0) {
     return (
@@ -22,7 +28,10 @@ function ProductList({ products }) {
         <ProductCard
           key={product.id}
           product={product}
+          quantity={quantities.get(product.id) || 0}
           onAddToCart={addToCart}
+          onIncrease={increaseQuantity}
+          onDecrease={decreaseQuantity}
           onBuyNow={buyNow}
         />
       ))}

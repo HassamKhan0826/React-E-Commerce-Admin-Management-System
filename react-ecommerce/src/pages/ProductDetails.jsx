@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -7,6 +7,7 @@ import { useBuyNow } from "../hooks/useBuyNow";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import Button from "../components/Button";
+import QuantityControl from "../components/QuantityControl";
 import { formatCurrency, getOriginalPrice } from "../utils/helpers";
 
 function BackLink() {
@@ -26,19 +27,9 @@ function ProductDetails() {
   const { data, loading, error, refetch } = useFetch(
     savedProducts ? null : `https://dummyjson.com/products/${id}`,
   );
-  const { addToCart } = useCart();
+  const { cart, addToCart, increaseQuantity, decreaseQuantity } = useCart();
   const buyNow = useBuyNow();
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [added, setAdded] = useState(false);
-
-  useEffect(() => {
-    if (!added) {
-      return undefined;
-    }
-
-    const timer = setTimeout(() => setAdded(false), 1800);
-    return () => clearTimeout(timer);
-  }, [added]);
 
   const product = savedProducts
     ? savedProducts.find((item) => String(item.id) === id)
@@ -66,11 +57,7 @@ function ProductDetails() {
     );
   }
 
-  const handleAdd = () => {
-    addToCart(product);
-    setAdded(true);
-  };
-
+  const quantity = cart.find((item) => item.id === product.id)?.quantity || 0;
   const images = product.images?.length ? product.images : [product.thumbnail];
   const mainImage = images[selectedIndex] ?? images[0];
   const discount = Math.round(product.discountPercentage || 0);
@@ -120,9 +107,7 @@ function ProductDetails() {
             )}
           </div>
 
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            {product.title}
-          </h1>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">{product.title}</h1>
 
           {rating > 0 && (
             <p className="mt-3 text-sm font-semibold text-gold-500">
@@ -144,22 +129,35 @@ function ProductDetails() {
             )}
           </div>
 
-          {product.description && (
-            <p className="mt-6 leading-7 text-stone-600">{product.description}</p>
-          )}
+          {product.description && <p className="mt-6 leading-7 text-stone-600">{product.description}</p>}
 
           <p className={`mt-6 text-sm font-semibold ${inStock ? "text-brand-600" : "text-red-600"}`}>
             {inStock ? `In stock — ${product.stock} available` : "Out of stock"}
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button className="py-3 sm:px-10" onClick={() => buyNow(product)} disabled={!inStock}>
               Buy now
             </Button>
-            <Button variant="secondary" className="py-3 sm:px-8" onClick={handleAdd} disabled={!inStock}>
-              {added ? "Added to cart ✓" : "Add to cart"}
-            </Button>
-            {added && (
+
+            {quantity > 0 ? (
+              <div className="sm:w-40">
+                <QuantityControl
+                  size="md"
+                  quantity={quantity}
+                  max={product.stock}
+                  label={product.title}
+                  onIncrease={() => increaseQuantity(product.id)}
+                  onDecrease={() => decreaseQuantity(product.id)}
+                />
+              </div>
+            ) : (
+              <Button variant="secondary" className="py-3 sm:px-8" onClick={() => addToCart(product)} disabled={!inStock}>
+                Add to cart
+              </Button>
+            )}
+
+            {quantity > 0 && (
               <Link
                 to="/cart"
                 className="inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-brand-600 hover:underline"
@@ -172,21 +170,15 @@ function ProductDetails() {
           <dl className="mt-8 grid gap-4 border-t border-stone-200 pt-6 text-sm sm:grid-cols-3">
             <div>
               <dt className="text-stone-500">Shipping</dt>
-              <dd className="mt-1 font-medium text-stone-900">
-                {product.shippingInformation || "Standard delivery"}
-              </dd>
+              <dd className="mt-1 font-medium text-stone-900">{product.shippingInformation || "Standard delivery"}</dd>
             </div>
             <div>
               <dt className="text-stone-500">Warranty</dt>
-              <dd className="mt-1 font-medium text-stone-900">
-                {product.warrantyInformation || "No warranty"}
-              </dd>
+              <dd className="mt-1 font-medium text-stone-900">{product.warrantyInformation || "No warranty"}</dd>
             </div>
             <div>
               <dt className="text-stone-500">Returns</dt>
-              <dd className="mt-1 font-medium text-stone-900">
-                {product.returnPolicy || "No returns"}
-              </dd>
+              <dd className="mt-1 font-medium text-stone-900">{product.returnPolicy || "No returns"}</dd>
             </div>
           </dl>
         </div>
