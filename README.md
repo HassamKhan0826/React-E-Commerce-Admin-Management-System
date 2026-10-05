@@ -55,7 +55,7 @@ The project was built as the final project of a React internship. It brings toge
 
 | About | Mobile view  |
 | --- | --- |
-| ![Mobile view](screenshots/about.png) | ![Mobile view](screenshots/mobile.png) |
+| ![About page](screenshots/about.png) | ![Mobile view](screenshots/mobile.png) |
 
 ---
 
@@ -64,10 +64,10 @@ The project was built as the final project of a React internship. It brings toge
 ### Store
 
 - **Home page** with a hero section, store introduction, top-rated featured products and a call to action
-- **Product catalog** loaded from the DummyJSON API (194 products)
+- **Product catalog** loaded from the DummyJSON API (194 products), including products added by the admin
 - **Search** by product name, description or category, combined with a **category filter**
 - **Product details** page on a dynamic route (`/products/:id`) with an image gallery, price, discount, rating, stock, brand, shipping, warranty and return policy
-- **Shopping cart**: add, remove, increase and decrease quantity, clear the cart, total items and total price, with a free-shipping hint
+- **Shopping cart**: add to cart turns into a quantity counter (− / +, up to the available stock); remove, clear the cart, total items and total price, with a free-shipping hint
 - **Contact form** with validation, error messages and a success message; messages are delivered to the admin inbox
 - **Dark and light theme**, remembered after a refresh
 - **Loading, error and empty states** on every data-driven section, with a "Try again" button for failed requests
@@ -86,9 +86,9 @@ The project was built as the final project of a React internship. It brings toge
 ### Admin area (login required)
 
 - **Authentication** with a demo account; login state survives a refresh
-- **Protected routes**: every `/dashboard` page redirects to login when signed out, then returns the admin to the page they wanted
+- **Protected routes**: every `/admin/dashboard` page redirects to login when signed out, then returns the admin to the page they wanted
 - **Dashboard overview**: total products, orders, users and revenue, recent orders, recent products and quick actions
-- **Products management**: product table with search, and **view, add, edit and delete** in a reusable modal (changes are saved in the browser)
+- **Products management**: product table with search, and **view, add, edit and delete** in a reusable modal, with an optional **image upload** and description; changes appear in the store immediately
 - **Orders**: orders table with **status filtering** (Pending, Processing, Completed, Cancelled) and status updates; customer orders appear here automatically
 - **Users**: users table with **search** and activate/deactivate; new customers appear here, and deactivating a customer signs them out
 - **Messages**: inbox for contact form messages with read/unread status, an unread filter, a detail view, reply by email and delete
@@ -109,7 +109,8 @@ The project was built as the final project of a React internship. It brings toge
 | Context API + `useReducer` | Global state for admin auth, customers, cart and theme |
 | Fetch API | Loading data from the REST API (no Axios) |
 | Web Crypto API | Hashing customer passwords (SHA-256) |
-| localStorage | Persisting accounts, carts, orders, theme and admin data |
+| Canvas API | Resizing uploaded product images before saving |
+| localStorage | Persisting accounts, carts, orders, products, theme and admin data |
 | ESLint | Code quality checks |
 
 No Redux, Axios or UI component libraries (Material UI, Bootstrap, Ant Design) are used.
@@ -134,10 +135,8 @@ Product data comes from the free [DummyJSON Products API](https://dummyjson.com/
 
 | Endpoint | Used for |
 | --- | --- |
-| `https://dummyjson.com/products?limit=0` | All products (Products page) |
+| `https://dummyjson.com/products?limit=0` | All products, shared by the store (Home, Products) and the admin (Dashboard, Products management) |
 | `https://dummyjson.com/products/:id` | One product (Product details page) |
-| `https://dummyjson.com/products?limit=4&sortBy=rating&order=desc` | Top-rated featured products (Home) |
-| `https://dummyjson.com/products?limit=5&sortBy=id&order=desc` | Recent products (Dashboard) |
 
 DummyJSON doesn't save changes, so accounts, carts, orders, product management, users and messages are stored in the browser with localStorage.
 
@@ -188,6 +187,7 @@ react-ecommerce/
 ├── index.html
 ├── package.json
 ├── vite.config.js
+├── vercel.json                   # Rewrites every URL to index.html for React Router
 └── src/
     ├── main.jsx                  # App entry: router and context providers
     ├── App.jsx                   # All routes
@@ -211,6 +211,7 @@ react-ecommerce/
     │   ├── ProductList.jsx       # Product grid
     │   ├── ProtectedRoute.jsx    # Protects admin pages
     │   ├── PublicLayout.jsx      # Store layout: navbar + Outlet + footer
+    │   ├── QuantityControl.jsx   # − / + counter shown after adding to cart
     │   ├── SearchBar.jsx         # Reusable search input
     │   ├── Sidebar.jsx           # Admin navigation (mobile drawer)
     │   └── UserRow.jsx           # One user row (React.memo)
@@ -227,7 +228,8 @@ react-ecommerce/
     │   ├── useCart.js            # Read the cart context
     │   ├── useCustomer.js        # Read the customer context
     │   ├── useFetch.js           # Fetch data with loading/error states
-    │   └── useLocalStorage.js    # useState that is saved to localStorage
+    │   ├── useLocalStorage.js    # useState that is saved to localStorage
+    │   └── useProducts.js        # Product list shared by the store and the admin
     │
     ├── pages/
     │   ├── Home.jsx
@@ -255,7 +257,7 @@ react-ecommerce/
     │   └── cartReducer.js        # All cart actions
     │
     └── utils/
-        ├── helpers.js            # Formatting, password hashing and shared helpers
+        ├── helpers.js            # Formatting, password hashing, image helpers
         └── mockData.js           # Starting orders and users
 ```
 
@@ -297,7 +299,7 @@ flowchart LR
   R --> MO["/my-orders 👤"]
   R --> L["/login"]
   R --> NF["* → 404"]
-  R --> D["/dashboard 🔒"]
+  R --> D["/admin/dashboard 🔒"]
   D --> D1["Overview"]
   D --> D2["products"]
   D --> D3["orders"]
@@ -307,7 +309,17 @@ flowchart LR
   D --> D7["settings"]
 ```
 
-👤 = signed-in customer required · 🔒 = admin login required
+👤 = signed-in customer required · 🔒 = admin login required · `/admin` redirects to `/admin/dashboard`
+
+### Shared product list
+
+```mermaid
+flowchart LR
+  A["DummyJSON API"] --> B["useProducts"]
+  C["managedProducts<br/>(admin changes)"] --> B
+  B --> D["Store: Home, Products,<br/>Product details"]
+  B --> E["Admin: Dashboard,<br/>Products management"]
+```
 
 ### Buy now and checkout
 
@@ -339,12 +351,12 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A["User opens /dashboard/orders"] --> B{"Admin logged in?"}
+  A["User opens /admin/dashboard/orders"] --> B{"Admin logged in?"}
   B -- "Yes" --> C["Show the page"]
   B -- "No" --> D["Redirect to /login<br/>'Please login to continue.'"]
   D --> E{"Credentials valid?"}
   E -- "No" --> F["Show error"]
-  E -- "Yes" --> G["Return to /dashboard/orders"]
+  E -- "Yes" --> G["Return to /admin/dashboard/orders"]
 ```
 
 ### State management
@@ -356,7 +368,8 @@ flowchart TD
 | Signed-in customer | `CustomerContext` | Needed by Navbar, checkout, My orders, Buy now |
 | Cart | `CartContext` + `useReducer` | Shared across pages, with related actions, one cart per customer |
 | Theme | `ThemeContext` | Affects the whole app |
-| Accounts, orders, products, users, messages, settings | `useLocalStorage` | Saved in the browser (no backend) |
+| Products | `useProducts` | One list shared by the store and the admin |
+| Accounts, orders, users, messages, settings | `useLocalStorage` | Saved in the browser (no backend) |
 
 ---
 
@@ -369,13 +382,13 @@ flowchart TD
 | `useRef` | Auto-focus on forms and search; closing the account menu on an outside click |
 | `useContext` | Reading admin auth, customer, cart and theme state |
 | `useReducer` | Cart state with `ADD_TO_CART`, `REMOVE_FROM_CART`, `INCREASE_QUANTITY`, `DECREASE_QUANTITY`, `CLEAR_CART`, `LOAD_CART` |
-| `useMemo` | Filtered products, cart and checkout totals, revenue, status counts, customer orders |
+| `useMemo` | Filtered products, featured and recent products, cart quantities, totals, revenue, status counts, customer orders |
 | `useCallback` | Cart actions, `buyNow`, sign in/out functions, `deleteProduct`, `toggleStatus` passed to memoized children |
 | `React.memo` | `ProductCard`, `CartItem`, `UserRow`, `ProductRow` |
-| Custom hooks | `useFetch`, `useLocalStorage`, `useCart`, `useCustomer`, `useBuyNow` |
+| Custom hooks | `useFetch`, `useLocalStorage`, `useCart`, `useCustomer`, `useBuyNow`, `useProducts` |
 | `children` and composition | `Card`, `Modal`, `Button`, `Container`, `EmptyState` |
 | React Router | `BrowserRouter`, `Routes`, `Route`, `Link`, `NavLink`, `Outlet`, `Navigate`, `useNavigate`, `useParams`, `useLocation` |
-| Routing patterns | Nested routes, dynamic route, admin and customer protected routes, route state, 404 route |
+| Routing patterns | Nested routes, dynamic route, admin and customer protected routes, route state, redirect, 404 route |
 
 `React.memo` and `useCallback` work together: functions passed to list items keep the same reference between renders, so product cards and table rows only re-render when their own data changes.
 
@@ -394,7 +407,7 @@ flowchart TD
 | `orders` | All orders: demo orders and orders placed through checkout |
 | `users` | Users and their active/inactive status, including new customers |
 | `theme` | `"light"` or `"dark"` |
-| `managedProducts` | Products after admin changes (empty until the first change) |
+| `managedProducts` | Product list after admin changes, used by both the store and the admin (empty until the first change) |
 | `messages` | Messages sent from the Contact page |
 | `preferences` | Admin settings |
 
@@ -419,11 +432,11 @@ Colors are defined once as Tailwind theme tokens in `src/index.css`, so the whol
 
 ## Notes and limitations
 
-- **Frontend only:** there is no backend. Accounts, carts and orders are saved in the browser, so they exist only on that device and browser.
+- **Frontend only:** there is no backend. Accounts, carts, orders and product changes are saved in the browser, so they exist only on that device and browser.
 - **Passwords:** customer passwords are hashed with SHA-256 before saving, but this is not real security, because everything runs in the browser. A real store would verify passwords on a server.
 - **Payments are simulated:** card details are checked for format only and never saved; orders store only the last four digits.
 - **Admin login** uses a single demo account.
-- **Simulated product management:** DummyJSON does not store changes, so admin edits are kept in localStorage, and products added by the admin don't appear in the store. "Reset" restores the API data.
+- **Simulated product management:** DummyJSON does not store changes, so admin changes (including uploaded images) are kept in localStorage and shown in the store in that browser. "Reset" restores the API data. Ratings come from the API; products added by the admin have no rating.
 - **Stock** doesn't decrease after a purchase, because product data comes from the API.
 - **Reply by email** opens the computer's default email app with a `mailto:` link.
 - **Settings:** dark mode is fully connected. The other preferences are saved but not yet applied across the app.
@@ -441,4 +454,3 @@ GitHub: [@HassamKhan0826](https://github.com/HassamKhan0826)
 ## Acknowledgements
 
 Thanks to **Enigma Software Solutions** for the internship opportunity, and to **Sohaib Saleem**, Full stack Developer, Next.js, for guidance and code reviews throughout the project.
-
