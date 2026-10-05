@@ -124,26 +124,19 @@ function Navbar() {
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
               HT
             </span>
-            <span className="text-lg font-bold tracking-tight text-stone-900">
-              RE:STORE
-            </span>
+            <span className="text-lg font-bold tracking-tight text-stone-900">RE:STORE</span>
           </Link>
         </div>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === "/"}
-              className={desktopLinkClass}
-            >
+            <NavLink key={item.path} to={item.path} end={item.path === "/"} className={desktopLinkClass}>
               {item.label}
             </NavLink>
           ))}
 
           {isAuthenticated && (
-            <NavLink to="/dashboard" className={desktopLinkClass}>
+            <NavLink to="/admin/dashboard" className={desktopLinkClass}>
               Dashboard
             </NavLink>
           )}
@@ -200,10 +193,7 @@ function Navbar() {
             </button>
 
             {isAccountOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-stone-200 bg-cream-50 p-2 shadow-lg"
-              >
+              <div role="menu" className="absolute right-0 top-12 z-50 w-60 rounded-xl border border-stone-200 bg-cream-50 p-2 shadow-lg">
                 {isSignedIn ? (
                   <>
                     <div className="border-b border-stone-200 px-3 pb-2 pt-1">
@@ -232,7 +222,7 @@ function Navbar() {
 
                 {isAuthenticated ? (
                   <>
-                    <Link to="/dashboard" role="menuitem" onClick={closeMenus} className={`text-stone-700 ${menuItemClass}`}>
+                    <Link to="/admin/dashboard" role="menuitem" onClick={closeMenus} className={`text-stone-700 ${menuItemClass}`}>
                       Admin dashboard
                     </Link>
                     <button type="button" role="menuitem" onClick={handleAdminLogout} className={`text-red-600 ${menuItemClass}`}>
@@ -266,7 +256,7 @@ function Navbar() {
             ))}
 
             {isAuthenticated && (
-              <NavLink to="/dashboard" onClick={closeMenus} className={mobileLinkClass}>
+              <NavLink to="/admin/dashboard" onClick={closeMenus} className={mobileLinkClass}>
                 Dashboard
               </NavLink>
             )}

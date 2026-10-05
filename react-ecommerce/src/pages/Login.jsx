@@ -1,10 +1,11 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/contexts";
+import Button from "../components/Button";
 import { DEMO_CREDENTIALS } from "../utils/helpers";
 
 const inputClass =
-  "mt-2 w-full rounded-lg border border-stone-300 bg-cream-50 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
+  "mt-1.5 w-full rounded-lg border border-stone-300 bg-cream-50 px-3 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
 
 function Login() {
   const { isAuthenticated, login } = useContext(AuthContext);
@@ -17,7 +18,7 @@ function Login() {
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState("");
 
-  const redirectTo = location.state?.from || "/dashboard";
+  const redirectTo = location.state?.from || "/admin/dashboard";
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -47,7 +48,6 @@ function Login() {
     event.preventDefault();
 
     const validationErrors = validate();
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -64,9 +64,7 @@ function Login() {
     <section className="flex min-h-[75vh] items-center justify-center px-4 py-16">
       <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-cream-50 p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-stone-900">Admin login</h1>
-        <p className="mt-2 text-sm text-stone-500">
-          Sign in to manage products, orders and users.
-        </p>
+        <p className="mt-2 text-sm text-stone-500">Sign in to manage products, orders and users.</p>
 
         {location.state?.message && !loginError && (
           <div className="mt-6 rounded-lg bg-gold-50 px-4 py-3 text-sm font-medium text-gold-800">
@@ -82,9 +80,7 @@ function Login() {
 
         <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
           <div>
-            <label htmlFor="login-email" className="text-sm font-medium text-stone-700">
-              Email
-            </label>
+            <label htmlFor="login-email" className="text-sm font-medium text-stone-700">Email</label>
             <input
               id="login-email"
               ref={emailRef}
@@ -96,16 +92,14 @@ function Login() {
                 setLoginError("");
               }}
               className={inputClass}
-              placeholder="admin@example.com"
+              placeholder="admin email"
               autoComplete="username"
             />
             {errors.email && <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>}
           </div>
 
           <div>
-            <label htmlFor="login-password" className="text-sm font-medium text-stone-700">
-              Password
-            </label>
+            <label htmlFor="login-password" className="text-sm font-medium text-stone-700">Password</label>
             <input
               id="login-password"
               type="password"
@@ -122,12 +116,9 @@ function Login() {
             {errors.password && <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>}
           </div>
 
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
+          <Button type="submit" className="w-full py-3">
             Sign in
-          </button>
+          </Button>
         </form>
 
         <div className="mt-6 rounded-lg bg-cream-100 px-4 py-3 text-xs text-stone-600">

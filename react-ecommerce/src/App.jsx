@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import PublicLayout from "./components/PublicLayout";
 import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -45,8 +45,10 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+      <Route path="admin" element={<Navigate to="/admin/dashboard" replace />} />
+
       <Route
-        path="dashboard"
+        path="admin/dashboard"
         element={
           <ProtectedRoute>
             <DashboardLayout />

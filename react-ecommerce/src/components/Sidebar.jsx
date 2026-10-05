@@ -4,13 +4,13 @@ import { AuthContext } from "../context/contexts";
 import { getInitials } from "../utils/helpers";
 
 const links = [
-  { label: "Overview", path: "/dashboard" },
-  { label: "Products", path: "/dashboard/products" },
-  { label: "Orders", path: "/dashboard/orders" },
-  { label: "Users", path: "/dashboard/users" },
-  { label: "Messages", path: "/dashboard/messages" },
-  { label: "Profile", path: "/dashboard/profile" },
-  { label: "Settings", path: "/dashboard/settings" },
+  { label: "Overview", path: "/admin/dashboard" },
+  { label: "Products", path: "/admin/dashboard/products" },
+  { label: "Orders", path: "/admin/dashboard/orders" },
+  { label: "Users", path: "/admin/dashboard/users" },
+  { label: "Messages", path: "/admin/dashboard/messages" },
+  { label: "Profile", path: "/admin/dashboard/profile" },
+  { label: "Settings", path: "/admin/dashboard/settings" },
 ];
 
 const linkClass = ({ isActive }) =>
@@ -33,7 +33,7 @@ function Sidebar({ isOpen, onClose }) {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-stone-900/50 md:hidden"
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -67,7 +67,7 @@ function Sidebar({ isOpen, onClose }) {
             <NavLink
               key={link.path}
               to={link.path}
-              end={link.path === "/dashboard"}
+              end={link.path === "/admin/dashboard"}
               onClick={onClose}
               className={linkClass}
             >
