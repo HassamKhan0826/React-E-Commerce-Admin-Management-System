@@ -4,24 +4,21 @@ import Card from "../../components/Card";
 import Loading from "../../components/Loading";
 import ErrorMessage from "../../components/ErrorMessage";
 import { AuthContext } from "../../context/contexts";
-import { useFetch } from "../../hooks/useFetch";
+import { useProducts } from "../../hooks/useProducts";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { initialOrders, initialUsers } from "../../utils/mockData";
 import { formatCurrency, formatDate, getStatusClasses } from "../../utils/helpers";
 
-const RECENT_PRODUCTS_URL =
-  "https://dummyjson.com/products?limit=5&sortBy=id&order=desc&select=title,price,thumbnail,stock";
-
 const quickActions = [
-  { label: "Manage products", path: "/dashboard/products" },
-  { label: "Review orders", path: "/dashboard/orders" },
-  { label: "Manage users", path: "/dashboard/users" },
+  { label: "Manage products", path: "/admin/dashboard/products" },
+  { label: "Review orders", path: "/admin/dashboard/orders" },
+  { label: "Manage users", path: "/admin/dashboard/users" },
   { label: "Open storefront", path: "/products" },
 ];
 
 function Dashboard() {
   const { user } = useContext(AuthContext);
-  const { data, loading, error, refetch } = useFetch(RECENT_PRODUCTS_URL);
+  const { products, loading, error, refetch } = useProducts();
   const [orders] = useLocalStorage("orders", initialOrders);
   const [users] = useLocalStorage("users", initialUsers);
 
@@ -33,15 +30,19 @@ function Dashboard() {
     [orders],
   );
 
+  const recentProducts = useMemo(
+    () => [...products].sort((a, b) => b.id - a.id).slice(0, 5),
+    [products],
+  );
+
   const stats = [
-    { label: "Total products", value: data ? data.total : "—", note: "Live from the catalog" },
+    { label: "Total products", value: loading ? "—" : products.length, note: "In the store" },
     { label: "Total orders", value: orders.length, note: "+12.8% this month" },
     { label: "Total users", value: users.length, note: "+6.4% this month" },
     { label: "Total revenue", value: formatCurrency(revenue), note: "Excludes cancelled orders" },
   ];
 
   const recentOrders = orders.slice(0, 5);
-  const recentProducts = data?.products ?? [];
   const firstName = user?.name?.split(" ")[0] || "Admin";
 
   return (
@@ -65,7 +66,7 @@ function Dashboard() {
         <Card className="overflow-hidden p-0">
           <div className="flex items-center justify-between p-5">
             <h2 className="font-semibold text-stone-900">Recent orders</h2>
-            <Link to="/dashboard/orders" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+            <Link to="/admin/dashboard/orders" className="text-sm font-medium text-brand-600 hover:text-brand-700">
               View all
             </Link>
           </div>
@@ -123,7 +124,7 @@ function Dashboard() {
       <Card className="mt-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold text-stone-900">Recent products</h2>
-          <Link to="/dashboard/products" className="text-sm font-medium text-brand-600 hover:text-brand-700">
+          <Link to="/admin/dashboard/products" className="text-sm font-medium text-brand-600 hover:text-brand-700">
             View all
           </Link>
         </div>

@@ -1,21 +1,24 @@
 import { memo, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useFetch } from "../../hooks/useFetch";
-import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useProducts } from "../../hooks/useProducts";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
 import ErrorMessage from "../../components/ErrorMessage";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
-import { formatCurrency } from "../../utils/helpers";
+import {
+  createPlaceholderImage,
+  formatCurrency,
+  isPlaceholderImage,
+  resizeImage,
+} from "../../utils/helpers";
 
-const PRODUCTS_URL =
-  "https://dummyjson.com/products?limit=100&select=title,description,category,price,stock,rating,thumbnail,brand";
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-const emptyForm = { title: "", category: "", price: "", stock: "" };
+const emptyForm = { title: "", category: "", price: "", stock: "", description: "", image: "" };
 
 const inputClass =
-  "mt-1.5 w-full rounded-lg border border-stone-300 bg-cream-50 px-3 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
+  "mt-1.5 w-full rounded-lg border border-stone-300 bg-cream-50 px-3 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-600 focus:ring-4 focus:ring-brand-600/10";
 
 function validateProduct(form) {
   const errors = {};
@@ -33,18 +36,12 @@ const ProductRow = memo(function ProductRow({ product, onView, onEdit, onDelete 
     <tr className="border-t border-stone-200">
       <td className="px-5 py-3">
         <div className="flex items-center gap-3">
-          {product.thumbnail ? (
-            <img
-              src={product.thumbnail}
-              alt={product.title}
-              loading="lazy"
-              className="h-11 w-11 shrink-0 rounded-lg bg-cream-200 object-contain p-1"
-            />
-          ) : (
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-cream-200 text-xs font-bold text-stone-600">
-              {product.title.slice(0, 2).toUpperCase()}
-            </div>
-          )}
+          <img
+            src={product.thumbnail || createPlaceholderImage(product.title)}
+            alt={product.title}
+            loading="lazy"
+            className="h-11 w-11 shrink-0 rounded-lg bg-cream-200 object-contain p-1"
+          />
           <span className="font-medium text-stone-900">{product.title}</span>
         </div>
       </td>
@@ -66,16 +63,14 @@ const ProductRow = memo(function ProductRow({ product, onView, onEdit, onDelete 
 });
 
 function ProductsManagement() {
-  const { data, loading, error, refetch } = useFetch(PRODUCTS_URL);
-  const [savedProducts, setSavedProducts] = useLocalStorage("managedProducts", null);
-
-  const apiProducts = useMemo(() => data?.products ?? [], [data]);
-  const products = savedProducts ?? apiProducts;
+  const { products, apiProducts, savedProducts, setSavedProducts, loading, error, refetch } = useProducts();
 
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState({ type: null, product: null });
   const [form, setForm] = useState(emptyForm);
   const [formErrors, setFormErrors] = useState({});
+  const [imageError, setImageError] = useState("");
+  const [imageLoading, setImageLoading] = useState(false);
 
   const filteredProducts = useMemo(() => {
     const term = search.toLowerCase().trim();
@@ -106,14 +101,18 @@ function ProductsManagement() {
       category: product.category,
       price: String(product.price),
       stock: String(product.stock),
+      description: product.description || "",
+      image: isPlaceholderImage(product.thumbnail) ? "" : product.thumbnail || "",
     });
     setFormErrors({});
+    setImageError("");
   }, []);
 
   const openAdd = () => {
     setModal({ type: "add", product: null });
     setForm(emptyForm);
     setFormErrors({});
+    setImageError("");
   };
 
   const closeModal = useCallback(() => {
@@ -126,6 +125,36 @@ function ProductsManagement() {
     setFormErrors((current) => ({ ...current, [name]: "" }));
   };
 
+  const handleImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setImageError("Please choose an image file (JPG, PNG or WebP).");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setImageError("The image must be smaller than 5 MB.");
+      return;
+    }
+
+    setImageLoading(true);
+    try {
+      const image = await resizeImage(file);
+      setForm((current) => ({ ...current, image }));
+      setImageError("");
+    } catch {
+      setImageError("This image couldn't be read. Please try another one.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setForm((current) => ({ ...current, image: "" }));
+  };
+
   const handleSave = (event) => {
     event.preventDefault();
 
@@ -135,21 +164,37 @@ function ProductsManagement() {
       return;
     }
 
+    const title = form.title.trim();
     const values = {
-      title: form.title.trim(),
+      title,
       category: form.category.trim().toLowerCase(),
       price: Number(form.price),
       stock: Number(form.stock),
+      description: form.description.trim(),
+      thumbnail: form.image || createPlaceholderImage(title),
     };
 
     if (modal.type === "edit") {
       setSavedProducts((current) =>
-        (current ?? apiProducts).map((product) =>
-          product.id === modal.product.id ? { ...product, ...values } : product,
-        ),
+        (current ?? apiProducts).map((product) => {
+          if (product.id !== modal.product.id) return product;
+          const imageUnchanged = form.image && form.image === product.thumbnail;
+          return {
+            ...product,
+            ...values,
+            images: imageUnchanged ? product.images : form.image ? [form.image] : [],
+          };
+        }),
       );
     } else {
-      const newProduct = { id: Date.now(), rating: 0, thumbnail: "", description: "", brand: "", ...values };
+      const newProduct = {
+        id: Date.now(),
+        rating: 0,
+        discountPercentage: 0,
+        brand: "",
+        images: form.image ? [form.image] : [],
+        ...values,
+      };
       setSavedProducts((current) => [newProduct, ...(current ?? apiProducts)]);
     }
 
@@ -162,11 +207,11 @@ function ProductsManagement() {
     }
   };
 
-  if (!savedProducts && loading) {
+  if (loading) {
     return <Loading text="Loading products..." />;
   }
 
-  if (!savedProducts && error) {
+  if (error) {
     return <ErrorMessage message="Failed to load products." onRetry={refetch} />;
   }
 
@@ -178,7 +223,7 @@ function ProductsManagement() {
         <div>
           <h1 className="text-2xl font-bold text-stone-900">Products management</h1>
           <p className="mt-1 text-sm text-stone-500">
-            {products.length} products · changes are saved in this browser
+            {products.length} products · changes appear in the store
           </p>
         </div>
 
@@ -228,13 +273,11 @@ function ProductsManagement() {
       <Modal open={modal.type === "view"} onClose={closeModal} title="Product details">
         {viewed && (
           <div>
-            {viewed.thumbnail && (
-              <img
-                src={viewed.thumbnail}
-                alt={viewed.title}
-                className="mb-5 aspect-video w-full rounded-xl bg-cream-200 object-contain p-4"
-              />
-            )}
+            <img
+              src={viewed.thumbnail || createPlaceholderImage(viewed.title)}
+              alt={viewed.title}
+              className="mb-5 aspect-video w-full rounded-xl bg-cream-200 object-contain p-4"
+            />
             <h3 className="text-xl font-semibold text-stone-900">{viewed.title}</h3>
             {viewed.description && (
               <p className="mt-2 text-sm leading-6 text-stone-600">{viewed.description}</p>
@@ -257,14 +300,12 @@ function ProductsManagement() {
                 <dd className="font-medium text-stone-900">{viewed.stock}</dd>
               </div>
             </dl>
-            {viewed.thumbnail && (
-              <Link
-                to={`/products/${viewed.id}`}
-                className="mt-6 inline-block text-sm font-semibold text-brand-600 hover:text-brand-700"
-              >
-                Open in store →
-              </Link>
-            )}
+            <Link
+              to={`/products/${viewed.id}`}
+              className="mt-6 inline-block text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              Open in store →
+            </Link>
           </div>
         )}
       </Modal>
@@ -275,6 +316,36 @@ function ProductsManagement() {
         title={modal.type === "edit" ? "Edit product" : "Add product"}
       >
         <form onSubmit={handleSave} noValidate className="grid gap-4">
+          <div>
+            <p className="text-sm font-medium text-stone-700">
+              Image <span className="font-normal text-stone-500">(optional)</span>
+            </p>
+            <div className="mt-1.5 flex items-center gap-4">
+              <img
+                src={form.image || createPlaceholderImage(form.title)}
+                alt=""
+                className="h-20 w-20 shrink-0 rounded-lg border border-stone-200 bg-cream-200 object-contain p-1"
+              />
+              <div className="flex flex-wrap gap-2">
+                <label className="cursor-pointer rounded-lg border border-stone-300 px-3 py-2 text-xs font-semibold text-stone-700 hover:bg-cream-100">
+                  {imageLoading ? "Processing..." : form.image ? "Change image" : "Upload image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="sr-only"
+                    disabled={imageLoading}
+                  />
+                </label>
+                {form.image && (
+                  <Button variant="danger" size="sm" onClick={removeImage}>Remove</Button>
+                )}
+              </div>
+            </div>
+            <p className="mt-1.5 text-xs text-stone-500">JPG, PNG or WebP, up to 5 MB. Without an image, initials are shown.</p>
+            {imageError && <p className="mt-1 text-xs text-red-600">{imageError}</p>}
+          </div>
+
           <div>
             <label htmlFor="product-title" className="text-sm font-medium text-stone-700">Title</label>
             <input id="product-title" name="title" value={form.title} onChange={handleFormChange} className={inputClass} />
@@ -300,9 +371,25 @@ function ProductsManagement() {
             </div>
           </div>
 
+          <div>
+            <label htmlFor="product-description" className="text-sm font-medium text-stone-700">
+              Description <span className="font-normal text-stone-500">(optional)</span>
+            </label>
+            <textarea
+              id="product-description"
+              name="description"
+              rows="3"
+              value={form.description}
+              onChange={handleFormChange}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="secondary" onClick={closeModal}>Cancel</Button>
-            <Button type="submit">{modal.type === "edit" ? "Save changes" : "Add product"}</Button>
+            <Button type="submit" disabled={imageLoading}>
+              {modal.type === "edit" ? "Save changes" : "Add product"}
+            </Button>
           </div>
         </form>
       </Modal>
