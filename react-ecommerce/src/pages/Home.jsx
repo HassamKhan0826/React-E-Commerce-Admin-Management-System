@@ -1,10 +1,9 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useFetch } from "../hooks/useFetch";
+import { useProducts } from "../hooks/useProducts";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import ProductList from "../components/ProductList";
-
-const FEATURED_URL = "https://dummyjson.com/products?limit=4&sortBy=rating&order=desc";
 
 const heroImages = [
   {
@@ -24,11 +23,7 @@ const heroImages = [
   },
 ];
 
-const trustPoints = [
-  "Free shipping over $50",
-  "30-day easy returns",
-  "Secure checkout",
-];
+const trustPoints = ["Free shipping over $50", "30-day easy returns", "Secure checkout"];
 
 const features = [
   {
@@ -46,12 +41,15 @@ const features = [
 ];
 
 function Home() {
-  const { data, loading, error, refetch } = useFetch(FEATURED_URL);
-  const featuredProducts = data?.products ?? [];
+  const { products, loading, error, refetch } = useProducts();
+
+  const featuredProducts = useMemo(
+    () => [...products].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4),
+    [products],
+  );
 
   return (
     <>
-      {/* Hero */}
       <section className="overflow-hidden bg-cream-50">
         <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
           <div>
@@ -114,7 +112,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Application introduction */}
       <section className="border-y border-stone-200 bg-cream-100">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
@@ -138,7 +135,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Featured products */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -155,7 +151,6 @@ function Home() {
         {!loading && !error && <ProductList products={featuredProducts} />}
       </section>
 
-      {/* Call to action */}
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-brand-600 px-8 py-12 text-white md:flex-row md:items-center md:px-12">
           <div>

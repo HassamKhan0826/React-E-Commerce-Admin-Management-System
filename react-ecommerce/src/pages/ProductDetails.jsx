@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useFetch } from "../hooks/useFetch";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useCart } from "../hooks/useCart";
 import { useBuyNow } from "../hooks/useBuyNow";
 import Loading from "../components/Loading";
@@ -21,8 +22,9 @@ function BackLink() {
 
 function ProductDetails() {
   const { id } = useParams();
-  const { data: product, loading, error, refetch } = useFetch(
-    `https://dummyjson.com/products/${id}`,
+  const [savedProducts] = useLocalStorage("managedProducts", null);
+  const { data, loading, error, refetch } = useFetch(
+    savedProducts ? null : `https://dummyjson.com/products/${id}`,
   );
   const { addToCart } = useCart();
   const buyNow = useBuyNow();
@@ -37,6 +39,10 @@ function ProductDetails() {
     const timer = setTimeout(() => setAdded(false), 1800);
     return () => clearTimeout(timer);
   }, [added]);
+
+  const product = savedProducts
+    ? savedProducts.find((item) => String(item.id) === id)
+    : data;
 
   if (loading) {
     return (
@@ -53,7 +59,7 @@ function ProductDetails() {
         <div className="mt-6">
           <ErrorMessage
             message="We couldn't load this product. It may not exist."
-            onRetry={refetch}
+            onRetry={savedProducts ? undefined : refetch}
           />
         </div>
       </section>
@@ -69,6 +75,7 @@ function ProductDetails() {
   const mainImage = images[selectedIndex] ?? images[0];
   const discount = Math.round(product.discountPercentage || 0);
   const inStock = product.stock > 0;
+  const rating = Number(product.rating || 0);
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -117,14 +124,14 @@ function ProductDetails() {
             {product.title}
           </h1>
 
-          <p className="mt-3 text-sm font-semibold text-gold-500">
-            ★ <span className="text-stone-700">{product.rating.toFixed(1)} out of 5</span>
-          </p>
+          {rating > 0 && (
+            <p className="mt-3 text-sm font-semibold text-gold-500">
+              ★ <span className="text-stone-700">{rating.toFixed(1)} out of 5</span>
+            </p>
+          )}
 
           <div className="mt-6 flex flex-wrap items-baseline gap-3">
-            <span className="text-4xl font-bold text-stone-900">
-              {formatCurrency(product.price)}
-            </span>
+            <span className="text-4xl font-bold text-stone-900">{formatCurrency(product.price)}</span>
             {discount > 0 && (
               <>
                 <span className="text-lg text-stone-400 line-through">
@@ -137,7 +144,9 @@ function ProductDetails() {
             )}
           </div>
 
-          <p className="mt-6 leading-7 text-stone-600">{product.description}</p>
+          {product.description && (
+            <p className="mt-6 leading-7 text-stone-600">{product.description}</p>
+          )}
 
           <p className={`mt-6 text-sm font-semibold ${inStock ? "text-brand-600" : "text-red-600"}`}>
             {inStock ? `In stock — ${product.stock} available` : "Out of stock"}

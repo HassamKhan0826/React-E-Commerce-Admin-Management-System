@@ -55,3 +55,37 @@ export async function hashPassword(password) {
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
 }
+
+export function createPlaceholderImage(title = "") {
+  const letters = title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 2).toUpperCase() || "?";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#f3eada"/><text x="100" y="122" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#8a1e30" text-anchor="middle">${letters}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+export function isPlaceholderImage(src = "") {
+  return src.startsWith("data:image/svg+xml");
+}
+
+export function resizeImage(file, maxSize = 600) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read the file."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("Could not load the image."));
+      image.onload = () => {
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
